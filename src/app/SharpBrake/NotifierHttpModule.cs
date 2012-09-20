@@ -1,4 +1,7 @@
 ﻿using System;
+
+#if (!CLIENT_PROFILE)
+
 using System.Web;
 
 namespace SharpBrake
@@ -45,3 +48,5 @@ namespace SharpBrake
         }
     }
 }
+
+#endif

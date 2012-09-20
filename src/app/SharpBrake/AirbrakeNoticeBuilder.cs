@@ -4,8 +4,11 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+
+#if (!CLIENT_PROFILE)
 using System.Web;
 using System.Web.SessionState;
+#endif
 
 using Common.Logging;
 
@@ -65,7 +68,7 @@ namespace SharpBrake
                 return this.notifier ?? (this.notifier = new AirbrakeNotifier
                 {
                     Name = "SharpBrake",
-                    Url = "https://github.com/asbjornu/SharpBrake",
+                    Url = "https://github.com/powerinbox/SharpBrake",
                     Version = typeof(AirbrakeNotice).Assembly.GetName().Version.ToString()
                 });
             }
@@ -197,6 +200,8 @@ namespace SharpBrake
 
             var parameters = new List<AirbrakeVar>();
             var session = new List<AirbrakeVar>();
+
+#if (!CLIENT_PROFILE)
             var httpContext = HttpContext.Current;
 
             if (httpContext != null)
@@ -228,6 +233,7 @@ namespace SharpBrake
                     cgiData.Add(new AirbrakeVar("Browser.W3CDomVersion", browser.W3CDomVersion));
                 }
             }
+#endif
 
             request.CgiData = cgiData.ToArray();
             request.Params = parameters.Any() ? parameters.ToArray() : null;
@@ -298,7 +304,7 @@ namespace SharpBrake
             return lines.ToArray();
         }
 
-
+#if (!CLIENT_PROFILE)
         private IEnumerable<AirbrakeVar> BuildVars(HttpCookieCollection cookies)
         {
             if ((cookies == null) || (cookies.Count == 0))
@@ -314,7 +320,7 @@ namespace SharpBrake
                    where !String.IsNullOrEmpty(value)
                    select new AirbrakeVar(key, value);
         }
-
+#endif
 
         private IEnumerable<AirbrakeVar> BuildVars(NameValueCollection formData)
         {
@@ -331,7 +337,7 @@ namespace SharpBrake
                    select new AirbrakeVar(key, value);
         }
 
-
+#if (!CLIENT_PROFILE)
         private IEnumerable<AirbrakeVar> BuildVars(HttpSessionState session)
         {
             if ((session == null) || (session.Count == 0))
@@ -347,5 +353,6 @@ namespace SharpBrake
                    where !String.IsNullOrEmpty(value)
                    select new AirbrakeVar(key, value);
         }
+#endif
     }
 }

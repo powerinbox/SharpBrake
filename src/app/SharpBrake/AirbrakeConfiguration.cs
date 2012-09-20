@@ -1,7 +1,10 @@
 using System;
 using System.Configuration;
 using System.Linq;
+
+#if (!CLIENT_PROFILE)
 using System.Web;
+#endif
 
 namespace SharpBrake
 {
@@ -20,12 +23,16 @@ namespace SharpBrake
             ServerUri = ConfigurationManager.AppSettings["Airbrake.ServerUri"]
                         ?? "https://api.airbrake.io/notifier_api/v2/notices";
 
+#if (!CLIENT_PROFILE)
             ProjectRoot = HttpContext.Current != null
                               ? HttpContext.Current.Request.ApplicationPath
                               : Environment.CurrentDirectory;
+#else
+            ProjectRoot = Environment.CurrentDirectory;
+#endif
 
             string[] values = ConfigurationManager.AppSettings.GetValues("Airbrake.AppVersion");
-            
+
             if (values != null)
                 AppVersion = values.FirstOrDefault();
         }
@@ -62,7 +69,7 @@ namespace SharpBrake
 
         /// <summary>
         /// Gets or sets the project root. By default set to  <see cref="HttpRequest.ApplicationPath"/>
-        /// if <see cref="HttpContext.Current"/> is not null, else <see cref="Environment.CurrentDirectory"/>. 
+        /// if <see cref="HttpContext.Current"/> is not null, else <see cref="Environment.CurrentDirectory"/>.
         /// </summary>
         /// <remarks>
         /// Only set this if you need to override the default project root.
