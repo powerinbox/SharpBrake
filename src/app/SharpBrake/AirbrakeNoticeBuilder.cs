@@ -124,8 +124,9 @@ namespace SharpBrake
         /// Creates a <see cref="AirbrakeNotice"/> from the the specified error.
         /// </summary>
         /// <param name="error">The error.</param>
+        /// <param name="extraParams">extra data for adding the params in airbrake notice </param>
         /// <returns></returns>
-        public AirbrakeNotice Notice(AirbrakeError error)
+        public AirbrakeNotice Notice(AirbrakeError error, IEnumerable<KeyValuePair<string, string>> extraParams = null)
         {
             this.log.Debug(f => f("{0}.Notice({1})", GetType(), error));
 
@@ -141,7 +142,7 @@ namespace SharpBrake
                                             ? error.CatchingMethod
                                             : null;
 
-            AddContextualInformation(notice, catchingMethod);
+            AddContextualInformation(notice, catchingMethod, extraParams);
 
             return notice;
         }
@@ -151,10 +152,11 @@ namespace SharpBrake
         /// Creates a <see cref="AirbrakeNotice"/> from the the specified exception.
         /// </summary>
         /// <param name="exception">The exception.</param>
+        /// <param name="extraParams">extra data for adding the params in airbrake notice </param>
         /// <returns>
         /// A <see cref="AirbrakeNotice"/>, created from the the specified exception.
         /// </returns>
-        public AirbrakeNotice Notice(Exception exception)
+        public AirbrakeNotice Notice(Exception exception, IEnumerable<KeyValuePair<string, string>> extraParams = null)
         {
             if (exception == null)
                 throw new ArgumentNullException("exception");
@@ -163,11 +165,11 @@ namespace SharpBrake
 
             AirbrakeError error = ErrorFromException(exception);
 
-            return Notice(error);
+            return Notice(error, extraParams);
         }
 
 
-        private void AddContextualInformation(AirbrakeNotice notice, MethodBase catchingMethod)
+        private void AddContextualInformation(AirbrakeNotice notice, MethodBase catchingMethod, IEnumerable<KeyValuePair<string, string>> extraParams = null)
         {
             var component = String.Empty;
             var action = String.Empty;
@@ -213,6 +215,9 @@ namespace SharpBrake
                 cgiData.AddRange(BuildVars(httpRequest.Headers));
                 cgiData.AddRange(BuildVars(httpRequest.Cookies));
                 parameters.AddRange(BuildVars(httpRequest.Params));
+                if (extraParams != null)
+                    parameters.AddRange(extraParams.Select(pair => new AirbrakeVar(pair.Key, pair.Value)));
+
                 session.AddRange(BuildVars(httpContext.Session));
 
                 if (httpContext.User != null)

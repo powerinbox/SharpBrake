@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Net;
@@ -59,9 +60,10 @@ namespace SharpBrake
         /// Sends the specified exception to Airbrake.
         /// </summary>
         /// <param name="exception">The e.</param>
-        public void Send(Exception exception)
+        /// <param name="extraParams">Extra parameters for logging </param>
+        public void Send(Exception exception, IEnumerable<KeyValuePair<string,string>> extraParams = null)
         {
-            AirbrakeNotice notice = this.builder.Notice(exception);
+            AirbrakeNotice notice = this.builder.Notice(exception, extraParams);
 
             //TODO: set up request, session and server headers
             // Why would that be necessary, it's set in Send(AirbrakeNotice), isn't it? - @asbjornu
